@@ -71,12 +71,16 @@ print("The closest digits are " + str(minij[0]) + " and " + str(minij[1]))
 # Now classify based on distances
 dtemp = np.zeros(digits)
 training_class_euc = np.zeros(train_points, dtype=int)
+train_percent_euc = 0.0
 for k in range(train_points):
 	for i in range(digits):
 		for j in range(imsize):
 			dtemp[i] += (data_in[k,j]-center[i,j])**2.0
 	training_class_euc[k] = np.argmin(dtemp)
+	if training_class_euc[k] == data_out[k]:
+		train_percent_euc += 1.0
 	dtemp *= 0.0
+print(str(100.*train_percent_euc/train_points) + " percent correctly classified")
 print("Confusion Matrix from Euclidean Distances for Training Set:")
 print(confusion_matrix(data_out, training_class_euc))
 
@@ -106,12 +110,15 @@ with open(test_out) as csvfile:
 
 # Now classify based on distances
 testing_class_euc = np.zeros(test_points, dtype=int)
+test_percent_euc = 0.0
 for k in range(test_points):
 	for i in range(digits):
 		for j in range(imsize):
 			dtemp[i] += (test_data_in[k,j]-center[i,j])**2.0
 	testing_class_euc[k] = np.argmin(dtemp)
-
+	if testing_class_euc[k] == test_data_out[k]:
+		test_percent_euc += 1.0
 	dtemp *= 0.0
+print(str(100.*test_percent_euc/test_points) + " percent correctly classified")
 print("Confusion Matrix from Euclidean Distances for Training Set:")
 print(confusion_matrix(test_data_out, testing_class_euc))
