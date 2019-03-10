@@ -30,9 +30,9 @@ with open(train_in) as csvfile:
 
 # Read in training set digits while calculating center and digit totals
 with open(train_out) as csvfile:
-	reader = csv.reader(csvfile)
+	train_digits = csv.reader(csvfile)
 	i = 0
-	for row in reader:
+	for row in train_digits:
 		data_out[i] = row[0]
 		number[data_out[i]] += 1.0
 		center[data_out[i]] += data_in[i]
@@ -80,7 +80,6 @@ for k in range(train_points):
 print("Confusion Matrix from Euclidean Distances for Training Set:")
 print(confusion_matrix(data_out, training_class_euc))
 
-"""
 # Read in testing data
 with open(test_in) as csvfile:
 	test_size, test_data = itertools.tee(csv.reader(csvfile), 2)
@@ -98,22 +97,21 @@ with open(test_in) as csvfile:
 		i += 1
 
 # Read in test set digits
-with open(train_out) as csvfile:
-	reader = csv.reader(csvfile)
+with open(test_out) as csvfile:
+	test_digits = csv.reader(csvfile)
 	i = 0
-	for row in reader:
-		# test_data_out[i] = row[0]
+	for row in test_digits:
+		test_data_out[i] = row[0]
 		i += 1
-		print(i)
 
 # Now classify based on distances
-testing_class_euc = np.zeros(train_points, dtype=int)
+testing_class_euc = np.zeros(test_points, dtype=int)
 for k in range(test_points):
 	for i in range(digits):
 		for j in range(imsize):
-			dtemp[i] += (data_in[k,j]-center[i,j])**2.0
+			dtemp[i] += (test_data_in[k,j]-center[i,j])**2.0
 	testing_class_euc[k] = np.argmin(dtemp)
+
 	dtemp *= 0.0
 print("Confusion Matrix from Euclidean Distances for Training Set:")
 print(confusion_matrix(test_data_out, testing_class_euc))
-"""
