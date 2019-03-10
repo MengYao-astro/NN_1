@@ -2,6 +2,7 @@
 # Michael Keim (michaelkeim2468@gmail.com)
 import numpy as np
 import csv
+import itertools
 from sklearn.metrics import confusion_matrix 
 
 # Specify training and test sets
@@ -10,26 +11,24 @@ train_in, train_out, test_in, test_out = "train_in.csv", "train_out.csv", "test_
 # Using a priori number of digits
 digits = 10
 
-# Find image size and number of points
+# Read in training data
 with open(train_in) as csvfile:
-	reader = csv.reader(csvfile)
-	imsize, points = len(next(reader)), 1+len(list(reader))
-with open(test_in) as csvfile:
-	reader = csv.reader(csvfile)
-	test_points = len(list(reader))
+	points, size, data = itertools.tee(csv.reader(csvfile), 3)
 
-# Create matricies for data
-data_in, data_out = np.zeros((points, imsize)), np.zeros(points, dtype=int)
-test_data_in, test_data_out = np.zeros((test_points, imsize)), np.zeros(test_points, dtype=int)
-center, number = np.zeros((digits, imsize)), np.zeros(digits)
+	# Find image size and number of points
+	train_points, imsize = len(list(points)), len(next(size))
 
-# Read in training set while calculating center and digit totals
-with open(train_in) as csvfile:
-	reader = csv.reader(csvfile)
+	# Create matricies for data
+	data_in, data_out = np.zeros((train_points, imsize)), np.zeros(train_points, dtype=int)
+	center, number = np.zeros((digits, imsize)), np.zeros(digits)
+
+	# Read in training set images
 	i = 0
-	for row in reader:
+	for row in data:
 		data_in[i] = row
 		i += 1
+
+# Read in training set digits while calculating center and digit totals
 with open(train_out) as csvfile:
 	reader = csv.reader(csvfile)
 	i = 0
@@ -43,7 +42,7 @@ for i in range(digits):
 
 # Find maximum radii
 rtemp2, rmax2 = np.zeros(imsize), np.zeros((digits, imsize))
-for i in range(points):
+for i in range(train_points):
 
 	# Find distance^2 from center for this image
 	for j in range(imsize):
@@ -64,35 +63,57 @@ for i in range(digits):
 		distance[j, i] = distance[i, j]
 		if distance[i, j] < distance[minij[0], minij[1]]:
 			minij = [i, j]
+	print("Cloud " + str(i) + " has " +str(number[i]) + " points and a maximum distance from center of " + str((rmax2[i].sum())**(0.5)))
+print("The distance between clouds is:")
+print(distance.round(3))
+print("The closest digits are " + str(minij[0]) + " and " + str(minij[1]))
 
 # Now classify based on distances
 dtemp = np.zeros(digits)
-class_id = np.zeros(points, dtype=int)
-for k in range(points):
+training_class_euc = np.zeros(train_points, dtype=int)
+for k in range(train_points):
 	for i in range(digits):
 		for j in range(imsize):
 			dtemp[i] += (data_in[k,j]-center[i,j])**2.0
-	class_id[k] = np.argmin(dtemp)
+	training_class_euc[k] = np.argmin(dtemp)
 	dtemp *= 0.0
-print(confusion_matrix(data_out, class_id))
+print("Confusion Matrix from Euclidean Distances for Training Set:")
+print(confusion_matrix(data_out, training_class_euc))
 
 """
-# Read in test set
+# Read in testing data
 with open(test_in) as csvfile:
-	reader = csv.reader(csvfile)
-	for row in reader:
+	test_size, test_data = itertools.tee(csv.reader(csvfile), 2)
+
+	# Find image size and number of train_points
+	test_points = len(list(test_size))
+
+	# Create matricies for data
+	test_data_in, test_data_out = np.zeros((test_points, imsize)), np.zeros(test_points, dtype=int)
+
+	# Read in training set images
+	i = 0
+	for row in test_data:
 		test_data_in[i] = row
 		i += 1
+
+# Read in test set digits
 with open(train_out) as csvfile:
 	reader = csv.reader(csvfile)
 	i = 0
 	for row in reader:
-		data_out[i] = row[0]
-		number[data_out[i]] += 1.0
-		center[data_out[i]] += data_in[i]
+		# test_data_out[i] = row[0]
 		i += 1
-for i in range(digits):
-	center[i,:] /= number[i]
-	"""
+		print(i)
 
-
+# Now classify based on distances
+testing_class_euc = np.zeros(train_points, dtype=int)
+for k in range(test_points):
+	for i in range(digits):
+		for j in range(imsize):
+			dtemp[i] += (data_in[k,j]-center[i,j])**2.0
+	testing_class_euc[k] = np.argmin(dtemp)
+	dtemp *= 0.0
+print("Confusion Matrix from Euclidean Distances for Training Set:")
+print(confusion_matrix(test_data_out, testing_class_euc))
+"""
