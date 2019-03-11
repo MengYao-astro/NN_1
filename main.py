@@ -21,6 +21,7 @@ center /= number[:, None]
 # Find maximum radii
 rtemp2, rmax2 = np.zeros(imsize), np.zeros((digits, imsize))
 for i in range(train_points):
+	rtemp2 = (data_in[i, :]-center[data_out[i], :])**2.0
 	if rtemp2.sum() > rmax2[data_out[i]].sum():
 		rmax2[data_out[i]] = rtemp2
 
@@ -32,7 +33,7 @@ for i in range(digits):
 		distance[j, i] = distance[i, j]
 		if distance[i, j] < distance[minij[0], minij[1]]:
 			minij = [i, j]
-	print("Cloud " + str(i) + " has " +str(number[i]) + " points and a maximum distance from center of " + str((rmax2[i].sum())**(0.5)))
+	print("Cloud " + str(i) + " has " +str(int(number[i])) + " points and a maximum distance from center of " + str(((rmax2[i].sum())**(0.5)).round(3)))
 print("The distance between clouds is: \n", distance.round(3), "\nThe closest digits are " + str(minij[0]) + " and " + str(minij[1]))
 
 # Now classify based on distances
@@ -46,7 +47,7 @@ for s in sklrn:
 		if train_class[k] == data_out[k]:
 			percent += 1.0
 		dtemp *= 0.0
-	print(str(100.*percent/train_points) + " percent of training set correctly classified for " + s + " distance metric\nConfusion matrix for training set:\n", confusion_matrix(data_out, train_class))
+	print(str(round(100.*percent/train_points,3)) + " percent of training set correctly classified for " + s + " distance metric\nConfusion matrix for training set:\n", confusion_matrix(data_out, train_class))
 	train_class *= 0
 	percent *= 0.0
 
@@ -58,6 +59,6 @@ for s in sklrn:
 		if test_class[k] == test_data_out[k]:
 			percent += 1.0
 		dtemp *= 0.0
-	print(str(100.*percent/test_points) + " percent of test set correctly classified for " + s + " distance metric\nConfusion matrix for test set:\n", confusion_matrix(test_data_out, test_class))
+	print(str(round(100.*percent/test_points,3)) + " percent of test set correctly classified for " + s + " distance metric\nConfusion matrix for test set:\n", confusion_matrix(test_data_out, test_class))
 	test_class *= 0
 	percent *= 0.0
