@@ -36,23 +36,28 @@ for i in range(digits):
 print("The distance between clouds is: \n", distance.round(3), "\nThe closest digits are " + str(minij[0]) + " and " + str(minij[1]))
 
 # Now classify based on distances
-dtemp, training_class_euc, train_percent_euc = np.zeros(digits), np.zeros(train_points, dtype=int), 0.0
-for k in range(train_points):
-	for i in range(digits):
-		dtemp[i] = (pairwise_distances(np.vstack((data_in[k,:], center[i,:])), metric='euclidean'))[0,1]
-	training_class_euc[k] = np.argmin(dtemp)
-	if training_class_euc[k] == data_out[k]:
-		train_percent_euc += 1.0
-	dtemp *= 0.0
-print(str(100.*train_percent_euc/train_points) + " percent correctly classified\nConfusion Matrix from Euclidean Distances for Training Set:\n", confusion_matrix(data_out, training_class_euc))
+sklrn =  ['cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan']
+dtemp, train_class, test_class, percent = np.zeros(digits), np.zeros(train_points, dtype=int), np.zeros(test_points, dtype=int), 0.0
+for s in sklrn:
+	for k in range(train_points):
+		for i in range(digits):
+			dtemp[i] = (pairwise_distances(np.vstack((data_in[k,:], center[i,:])), metric=s))[0,1]
+		train_class[k] = np.argmin(dtemp)
+		if train_class[k] == data_out[k]:
+			percent += 1.0
+		dtemp *= 0.0
+	print(str(100.*percent/train_points) + " percent of training set correctly classified for " + s + " distance metric\nConfusion matrix for training set:\n", confusion_matrix(data_out, train_class))
+	train_class *= 0
+	percent *= 0.0
 
-# Now classify based on distances
-testing_class_euc, test_percent_euc = np.zeros(test_points, dtype=int), 0.0
-for k in range(test_points):
-	for i in range(digits):
-			dtemp[i] = (pairwise_distances(np.vstack((test_data_in[k,:], center[i,:])), metric='euclidean'))[0,1]
-	testing_class_euc[k] = np.argmin(dtemp)
-	if testing_class_euc[k] == test_data_out[k]:
-		test_percent_euc += 1.0
-	dtemp *= 0.0
-print(str(100.*test_percent_euc/test_points) + " percent correctly classified\nConfusion Matrix from Euclidean Distances for Training Set:\n", confusion_matrix(test_data_out, testing_class_euc))
+	# Now for the test set
+	for k in range(test_points):
+		for i in range(digits):
+			dtemp[i] = (pairwise_distances(np.vstack((test_data_in[k,:], center[i,:])), metric=s))[0,1]
+		test_class[k] = np.argmin(dtemp)
+		if test_class[k] == test_data_out[k]:
+			percent += 1.0
+		dtemp *= 0.0
+	print(str(100.*percent/test_points) + " percent of test set correctly classified for " + s + " distance metric\nConfusion matrix for test set:\n", confusion_matrix(test_data_out, test_class))
+	test_class *= 0
+	percent *= 0.0
