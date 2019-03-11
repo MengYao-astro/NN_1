@@ -10,7 +10,7 @@ Created on Mon Mar 11 09:41:23 2019
 import numpy as np
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
-
+#from sklearn.metrics import confusion_matrix
 
 #read in data
 train_in=np.genfromtxt('train_in.csv',delimiter=',')
@@ -30,6 +30,10 @@ x0=[]
 for i in np.arange(len(train_in0)):
     train_in0mr7=train_in0[i,:][16*7:16*8]
     train_in0mr8=train_in0[i,:][16*8:16*9]
+    #extend the edges add '-1' at the end, insert -1 at the begining.
+    #it will be better to detect the peaks
+    train_in0mr7=np.insert(np.append(train_in0mr7,-1),0,-1)
+    train_in0mr8=np.insert(np.append(train_in0mr8,-1),0,-1)
     x0.append(len(find_peaks(train_in0mr7)[0])+len(find_peaks(train_in0mr8)[0]))
 x0=np.array(x0)
 #digit 1
@@ -37,6 +41,9 @@ x1=[]
 for i in np.arange(len(train_in1)):
     train_in1mr7=train_in1[i,:][16*7:16*8]
     train_in1mr8=train_in1[i,:][16*8:16*9]
+    #extend the edges add '-1' at the end, insert -1 at the begining.
+    train_in1mr7=np.insert(np.append(train_in1mr7,-1),0,-1)
+    train_in1mr8=np.insert(np.append(train_in1mr8,-1),0,-1)
     x1.append(len(find_peaks(train_in1mr7)[0])+len(find_peaks(train_in1mr8)[0]))
 x1=np.array(x1)
 #plot histogram
@@ -63,6 +70,15 @@ print('P(C1|X=3)=',PC1_3)
 PC0_2=1                #when x=2, the digit is 0
 PC1_g4=1               #when x>=4  the digit is 1
                        #otherwise = 0                        
+#expected loss
+#because generally, assuming a number begins wit 1, if we say '1' is '0', we will lose the value on digit level.
+L00=0
+L01=1 
+L10=4 
+L11=0
+#if x=3 , we say '0'
+loss0=PC0_3*L00+PC1_3*L10
+loss1=PC0_3*L01+PC1_3*L11
 
 #test
 #drag out 0&1
@@ -73,31 +89,43 @@ testresult0=[]
 for i in np.arange(len(test_in0)):
     test_in0mr7=test_in0[i,:][16*7:16*8]
     test_in0mr8=test_in0[i,:][16*8:16*9]
+    #extend the edges add '-1' at the end, insert -1 at the begining.
+    test_in0mr7=np.insert(np.append(test_in0mr7,-1),0,-1)
+    test_in0mr8=np.insert(np.append(test_in0mr8,-1),0,-1)
     y=len(find_peaks(test_in0mr7)[0])+len(find_peaks(test_in0mr8)[0])
     if y >3.5 :
         testresult0.append(0)
     if y < 2.5:
         testresult0.append(1)
     if y==3:
-        if PC0_3 > PC1_3 :
+        if loss1>loss0 :
             testresult0.append(0)
+        else:  
+            testresult0.append(1)
 testresult0=np.array(testresult0)
 #digit 1
 testresult1=[]
 for i in np.arange(len(test_in1)):
     test_in1mr7=test_in1[i,:][16*7:16*8]
     test_in1mr8=test_in1[i,:][16*8:16*9]
+    #extend the edges add '-1' at the end, insert -1 at the begining.
+    test_in1mr7=np.insert(np.append(test_in1mr7,-1),0,-1)
+    test_in1mr8=np.insert(np.append(test_in1mr8,-1),0,-1)
     y=len(find_peaks(test_in1mr7)[0])+len(find_peaks(test_in1mr8)[0])
     if y >3.5 :
         testresult1.append(0)
     if y < 2.5:
         testresult1.append(1)
     if y==3:
-        if PC0_3 > PC1_3 :
+        if loss1>loss0 :
             testresult1.append(0)
+        else:  
+            testresult1.append(1)
 testresult1=np.array(testresult1)
 #accuracy
 accuracy=1-(sum(testresult0==1)+sum(testresult1==0))/(len(testresult0)+len(testresult1))
 print('accuracy=',accuracy)
 #confusion matrix
-
+confusion_in=np.append(np.zeros(len(test_in0)),np.ones(len(test_in1)))
+confusion_out=np.append(testresult0,testresult1)
+#confusion_matrix(confusion_in,confusion_out)
