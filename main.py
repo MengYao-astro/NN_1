@@ -5,6 +5,19 @@ import csv
 import itertools
 from sklearn.metrics import confusion_matrix, pairwise_distances
 
+# Function to calculate confusion matricies from minimum center distance or perceptron weights
+def confusion(inputs, outputs, labels, ftype, **kwargs):
+	temp, classification, percent = np.zeros(labels), np.zeros(len(inputs), dtype=int), 0.0
+	metric, centers , wieght = kwargs.get('skltype', None), kwargs.get('centers', None), kwargs.get('weight', None)
+	for i in range(len(inputs)):
+		if ftype == "distance":
+			classification[i] = np.argmin([(pairwise_distances(np.vstack((inputs[i,:], centers[j,:])), metric=metric))[0,1] for j in range(digits)])
+			percent = percent+1. if classification[i] == outputs[i] else percent
+		elif ftype == "perceptron":
+			classification[i] = np.argmax([np.dot(inputs[i,:], weights[j,:]) for j in range(digits)])
+			percent = percent+1. if classification[i] == outputs[i] else percent
+	print(str(round(100.*percent/len(inputs),3)) + " percent correctly classified.\nConfusion matrix:\n", confusion_matrix(outputs, classification))
+
 # Using a priori number of digits
 digits = 10
 
@@ -34,31 +47,31 @@ for i in range(digits):
 		if distance[i, j] < distance[minij[0], minij[1]]:
 			minij = [i, j]
 	print("Cloud " + str(i) + " has " +str(int(number[i])) + " points and a maximum distance from center of " + str(((rmax2[i].sum())**(0.5)).round(3)))
-print("The distance between clouds is: \n", distance.round(3), "\nThe closest digits are " + str(minij[0]) + " and " + str(minij[1]))
+print("\nThe distance between clouds is: \n", distance.round(3), "\nThe closest digits are " + str(minij[0]) + " and " + str(minij[1]))
 
 # Now classify based on distances
 sklrn =  ['cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan']
-dtemp, train_class, test_class, percent = np.zeros(digits), np.zeros(train_points, dtype=int), np.zeros(test_points, dtype=int), 0.0
 for s in sklrn:
-	for k in range(train_points):
-		for i in range(digits):
-			dtemp[i] = (pairwise_distances(np.vstack((data_in[k,:], center[i,:])), metric=s))[0,1]
-		train_class[k] = np.argmin(dtemp)
-		if train_class[k] == data_out[k]:
-			percent += 1.0
-		dtemp *= 0.0
-	print(str(round(100.*percent/train_points,3)) + " percent of training set correctly classified for " + s + " distance metric\nConfusion matrix for training set:\n", confusion_matrix(data_out, train_class))
-	train_class *= 0
-	percent *= 0.0
+	print("\nClassifying training set by " + s + " distance metric ...\n")
+	confusion(data_in, data_out, digits, ftype='distance', skltype=s, centers=center)
+	print("\nClassifying test set by " + s + " distance metric ...\n")
+	confusion(test_data_in, test_data_out, digits, ftype='distance', skltype=s, centers=center)
 
-	# Now for the test set
-	for k in range(test_points):
+# Append bias and make initial weights
+train_perceptron, test_perceptron, weights, weights_log = np.append(np.ones((train_points,1)), data_in, axis=1), np.append(np.ones((test_points,1)), test_data_in, axis=1), np.zeros((digits, imsize+1)), np.zeros((digits, imsize+1))
+
+# Specify perceptron properties
+learning_rate, max_iter, ident, predict = 0.01, 100, 0, 0
+
+# Train perceptron with heaviside disciminant function
+print("\nTraining perceptron ...")
+for _ in range(max_iter):
+	for image, digit in zip(train_perceptron, data_out):
 		for i in range(digits):
-			dtemp[i] = (pairwise_distances(np.vstack((test_data_in[k,:], center[i,:])), metric=s))[0,1]
-		test_class[k] = np.argmin(dtemp)
-		if test_class[k] == test_data_out[k]:
-			percent += 1.0
-		dtemp *= 0.0
-	print(str(round(100.*percent/test_points,3)) + " percent of test set correctly classified for " + s + " distance metric\nConfusion matrix for test set:\n", confusion_matrix(test_data_out, test_class))
-	test_class *= 0
-	percent *= 0.0
+			ident = 1 if digit == i else 0
+			predict = 1 if np.dot(image, weights[i,:]) > 0. else 0
+			weights[i,:] += learning_rate * (ident - predict) * image
+print("\nClassifying training set with perceptron ...\n")
+confusion(train_perceptron, data_out, digits, ftype='perceptron', weight=weights)
+print("\nClassifying test set with perceptron ...\n")
+confusion(test_perceptron, test_data_out, digits, ftype='perceptron', weight=weights)
