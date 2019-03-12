@@ -1,5 +1,5 @@
 # Program to Classify 16x16 Images of Digits
-# Michael Keim (michaelkeim2468@gmail.com)
+# Following report guidlines author names and emails are excluded
 import numpy as np
 import csv
 import itertools
