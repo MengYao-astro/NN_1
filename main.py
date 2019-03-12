@@ -47,7 +47,7 @@ for i in range(digits):
 print("\nThe distance between clouds is: \n", distance.round(3), "\nThe closest digits are " + str(minij[0]) + " and " + str(minij[1]))
 
 # Now classify based on distances
-sklrn =  ['cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan']
+sklrn =  ['cosine', 'euclidean', 'manhattan']
 for s in sklrn:
 	print("\nClassifying training set by " + s + " distance metric ...\n")
 	confusion(data_in, data_out, digits, ftype='distance', skltype=s, centers=center)
@@ -55,7 +55,7 @@ for s in sklrn:
 	confusion(test_data_in, test_data_out, digits, ftype='distance', skltype=s, centers=center)
 
 # Append bias and make initial weights
-train_perceptron, test_perceptron, weights, weights_log = np.append(np.ones((train_points,1)), data_in, axis=1), np.append(np.ones((test_points,1)), test_data_in, axis=1), np.zeros((digits, imsize+1)), np.zeros((digits, imsize+1))
+train_perceptron, test_perceptron, weights = np.append(np.ones((train_points,1)), data_in, axis=1), np.append(np.ones((test_points,1)), test_data_in, axis=1), np.zeros((digits, imsize+1))
 
 # Specify perceptron properties
 learning_rate, max_iter, ident, predict = 0.01, 100, 0, 0
