@@ -76,10 +76,22 @@ L00=0
 L01=1 
 L10=4 
 L11=0
-#if x=3 , we say '0'
+#if x=3 , we say '0'. loss=
 loss0=PC0_3*L00+PC1_3*L10
+#if x=3 , we say '1'. loss=
 loss1=PC0_3*L01+PC1_3*L11
-
+#Discriminant Function P0-P1
+def disfy(vx):         # define y= y(0)-y)(1)
+    if vx > 3.5 :
+        return 1 # probability of saying it is 0 is 1, y(0)=1, y(1)=0
+    if vx < 2.5 :
+        return -1 # y(0)=0, y(1)=1
+    if vx == 3:
+        if loss0>loss1 :     # consider the risk, if the loss of saying it is 0 is larger, then we would better say it is 1
+            return -1         # so y(0)=0 y(1)=1 
+        else:  
+            return 1         # otherwise the probability is 0
+    
 #test
 #drag out 0&1
 test_in0=[test_in[x,:] for x in np.where(test_out==0)][0]
@@ -92,18 +104,14 @@ for i in np.arange(len(test_in0)):
     #extend the edges add '-1' at the end, insert -1 at the begining.
     test_in0mr7=np.insert(np.append(test_in0mr7,-1),0,-1)
     test_in0mr8=np.insert(np.append(test_in0mr8,-1),0,-1)
-    y=len(find_peaks(test_in0mr7)[0])+len(find_peaks(test_in0mr8)[0])
-    if y >3.5 :
+    x=len(find_peaks(test_in0mr7)[0])+len(find_peaks(test_in0mr8)[0])
+    if disfy(x) > 0 :
         testresult0.append(0)
-    if y < 2.5:
+    if disfy(x) < 0 :
         testresult0.append(1)
-    if y==3:
-        if loss1>loss0 :
-            testresult0.append(0)
-        else:  
-            testresult0.append(1)
 testresult0=np.array(testresult0)
 #digit 1
+
 testresult1=[]
 for i in np.arange(len(test_in1)):
     test_in1mr7=test_in1[i,:][16*7:16*8]
@@ -111,16 +119,11 @@ for i in np.arange(len(test_in1)):
     #extend the edges add '-1' at the end, insert -1 at the begining.
     test_in1mr7=np.insert(np.append(test_in1mr7,-1),0,-1)
     test_in1mr8=np.insert(np.append(test_in1mr8,-1),0,-1)
-    y=len(find_peaks(test_in1mr7)[0])+len(find_peaks(test_in1mr8)[0])
-    if y >3.5 :
+    x=len(find_peaks(test_in1mr7)[0])+len(find_peaks(test_in1mr8)[0])
+    if disfy(x) > 0 :
         testresult1.append(0)
-    if y < 2.5:
+    if disfy(x) < 0 :
         testresult1.append(1)
-    if y==3:
-        if loss1>loss0 :
-            testresult1.append(0)
-        else:  
-            testresult1.append(1)
 testresult1=np.array(testresult1)
 #accuracy
 accuracy=1-(sum(testresult0==1)+sum(testresult1==0))/(len(testresult0)+len(testresult1))
