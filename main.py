@@ -7,7 +7,7 @@ from sklearn.metrics import confusion_matrix, pairwise_distances
 
 # Function to calculate confusion matricies from minimum center distance or perceptron weights
 def confusion(inputs, outputs, labels, ftype, **kwargs):
-	temp, classification, percent = np.zeros(labels), np.zeros(len(inputs), dtype=int), 0.0
+	temp, classification, percent = np.zeros(labels), np.zeros(len(inputs), dtype=int), 0.
 	metric, centers , wieght = kwargs.get('skltype', None), kwargs.get('centers', None), kwargs.get('weight', None)
 	for i in range(len(inputs)):
 		if ftype == "distance":
@@ -18,12 +18,9 @@ def confusion(inputs, outputs, labels, ftype, **kwargs):
 			percent = percent+1. if classification[i] == outputs[i] else percent
 	print(str(round(100.*percent/len(inputs),3)) + " percent correctly classified.\nConfusion matrix:\n", confusion_matrix(outputs, classification))
 
-# Using a priori number of digits
-digits = 10
-
 # Read in data
 data_in, data_out, test_data_in, test_data_out = np.genfromtxt('train_in.csv',delimiter=','), np.genfromtxt('train_out.csv',delimiter=',', dtype=int), np.genfromtxt('test_in.csv',delimiter=','), np.genfromtxt('test_out.csv',delimiter=',', dtype=int)
-train_points, imsize, test_points = len(data_in), len(data_in[0]), len(test_data_in)
+train_points, imsize, test_points, digits = len(data_in), len(data_in[0]), len(test_data_in), len(np.unique(data_out))
 
 # Read in training set digits while calculating center and digit totals
 center, number = np.zeros((digits, imsize)), np.zeros(digits)
