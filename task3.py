@@ -34,7 +34,7 @@ for i in np.arange(len(train_in0)):
     #it will be better to detect the peaks
     train_in0mr7=np.insert(np.append(train_in0mr7,-1),0,-1)
     train_in0mr8=np.insert(np.append(train_in0mr8,-1),0,-1)
-    x0.append(len(find_peaks(train_in0mr7)[0])+len(find_peaks(train_in0mr8)[0]))
+    x0.append(len(find_peaks(train_in0mr7,distance=3)[0])+len(find_peaks(train_in0mr8,distance=3)[0]))
 x0=np.array(x0)
 #digit 1
 x1=[]
@@ -44,7 +44,7 @@ for i in np.arange(len(train_in1)):
     #extend the edges add '-1' at the end, insert -1 at the begining.
     train_in1mr7=np.insert(np.append(train_in1mr7,-1),0,-1)
     train_in1mr8=np.insert(np.append(train_in1mr8,-1),0,-1)
-    x1.append(len(find_peaks(train_in1mr7)[0])+len(find_peaks(train_in1mr8)[0]))
+    x1.append(len(find_peaks(train_in1mr7,distance=3)[0])+len(find_peaks(train_in1mr8,distance=3)[0]))
 x1=np.array(x1)
 #plot histogram
 fig=plt.figure()
@@ -61,7 +61,7 @@ PC0=len(train_in0)/(len(train_in0)+len(train_in1))
 PC1=len(train_in1)/(len(train_in0)+len(train_in1))
 P3_C0=sum(x0==3)/len(train_in0)
 P3_C1=sum(x1==3)/len(train_in1)
-# hence
+# hence if case0 and case1 overlap each other when x=3, we will need this part.
 PC0_3=P3_C0*PC0/P3     #when x=3, posteriors of the digit being 0
 print('P(C0|X=3)=',PC0_3)
 PC1_3=P3_C1*PC1/P3     #when x=3, posteriors of the digit being 1
@@ -73,17 +73,17 @@ PC1_g4=1               #when x>=4  the digit is 1
 def prob0(vx):
     if vx < 2.5 :
         return 0
-    if vx > 3.5 :
+    if vx > 2.5 :
         return 1
-    else :
-        return PC0_3
+    #else :
+     #   return PC0_3
 def prob1(vx):
     if vx < 2.5 :
         return 1
-    if vx > 3.5 :
+    if vx > 2.5 :
         return 0
-    else :
-        return PC1_3
+    #else :
+     #   return PC1_3
 #plt.figure()
 xvalue = np.linspace(0, 7, 1000)
 y0 = np.array([])
@@ -109,15 +109,15 @@ loss0=PC0_3*L00+PC1_3*L10
 loss1=PC0_3*L01+PC1_3*L11
 #Discriminant Function P0-P1
 def disfy(vx):         # define y= y(0)-y)(1)
-    if vx > 3.5 :
+    if vx > 2.5 :
         return 1 # probability of saying it is 0 is 1, y(0)=1, y(1)=0
     if vx < 2.5 :
         return -1 # y(0)=0, y(1)=1
-    if vx == 3:
-        if loss0>loss1 :     # consider the risk, if the loss of saying it is 0 is larger, then we would better say it is 1
-            return -1         # so y(0)=0 y(1)=1 
-        else:  
-            return 1         # otherwise the probability is 0
+    #if vx == 3:
+     #   if loss0>loss1 :     # consider the risk, if the loss of saying it is 0 is larger, then we would better say it is 1
+      #      return -1         # so y(0)=0 y(1)=1 
+       # else:  
+        #    return 1         # otherwise the probability is 0
     
 #test
 #drag out 0&1
@@ -131,7 +131,7 @@ for i in np.arange(len(test_in0)):
     #extend the edges add '-1' at the end, insert -1 at the begining.
     test_in0mr7=np.insert(np.append(test_in0mr7,-1),0,-1)
     test_in0mr8=np.insert(np.append(test_in0mr8,-1),0,-1)
-    x=len(find_peaks(test_in0mr7)[0])+len(find_peaks(test_in0mr8)[0])
+    x=len(find_peaks(test_in0mr7,distance=3)[0])+len(find_peaks(test_in0mr8,distance=3)[0])
     if disfy(x) > 0 :
         testresult0.append(0)
     if disfy(x) < 0 :
@@ -146,7 +146,7 @@ for i in np.arange(len(test_in1)):
     #extend the edges add '-1' at the end, insert -1 at the begining.
     test_in1mr7=np.insert(np.append(test_in1mr7,-1),0,-1)
     test_in1mr8=np.insert(np.append(test_in1mr8,-1),0,-1)
-    x=len(find_peaks(test_in1mr7)[0])+len(find_peaks(test_in1mr8)[0])
+    x=len(find_peaks(test_in1mr7,distance=3)[0])+len(find_peaks(test_in1mr8,distance=3)[0])
     if disfy(x) > 0 :
         testresult1.append(0)
     if disfy(x) < 0 :
@@ -155,7 +155,7 @@ testresult1=np.array(testresult1)
 #accuracy
 accuracy=1-(sum(testresult0==1)+sum(testresult1==0))/(len(testresult0)+len(testresult1))
 print('accuracy=',accuracy)
-#confusion matrix
+#confusion matrix if needed
 confusion_in=np.append(np.zeros(len(test_in0)),np.ones(len(test_in1)))
 confusion_out=np.append(testresult0,testresult1)
 #confusion_matrix(confusion_in,confusion_out)
