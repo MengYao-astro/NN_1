@@ -58,7 +58,7 @@ for s in sklrn:
 train_perceptron, test_perceptron, weights = np.append(np.ones((train_points,1)), data_in, axis=1), np.append(np.ones((test_points,1)), test_data_in, axis=1), np.zeros((digits, imsize+1))
 
 # Specify perceptron properties
-learning_rate, max_iter, ident, predict = 0.01, 8, 0, 0
+learning_rate, max_iter, ident, predict = 0.01, 1, 0, 0
 
 # Train perceptron with heaviside disciminant function
 print("\nTraining perceptron ...")
