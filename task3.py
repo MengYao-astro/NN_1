@@ -52,11 +52,10 @@ ax1=plt.subplot(1,2,1)
 ax1.hist(x0,bins=np.arange(1.5,7.5,1),label='peaks of 0')
 ax1.hist(x1,bins=np.arange(0.5,6.5,1),label='peaks of 1')
 ax1.legend(loc='best')
-ax2=plt.subplot(1,2,2)
-xall=np.hstack((x0,x1))
-ax2.hist(xall,bins=np.arange(0.5,7.5,1),label='histogram of peaks number')
-ax2.legend(loc='best')
+ax1.set_title('statistical histogram')
+
 #Bayes
+xall=np.hstack((x0,x1))
 P3=sum(xall==3)/len(xall)      #P3=P3_C0*PC0+P3_C1*PC1
 PC0=len(train_in0)/(len(train_in0)+len(train_in1))
 PC1=len(train_in1)/(len(train_in0)+len(train_in1))
@@ -69,7 +68,35 @@ PC1_3=P3_C1*PC1/P3     #when x=3, posteriors of the digit being 1
 print('P(C1|X=3)=',PC1_3)
 PC0_2=1                #when x=2, the digit is 0
 PC1_g4=1               #when x>=4  the digit is 1
-                       #otherwise = 0                        
+                       #otherwise = 0  
+#probability histogram
+def prob0(vx):
+    if vx < 2.5 :
+        return 0
+    if vx > 3.5 :
+        return 1
+    else :
+        return PC0_3
+def prob1(vx):
+    if vx < 2.5 :
+        return 1
+    if vx > 3.5 :
+        return 0
+    else :
+        return PC1_3
+#plt.figure()
+xvalue = np.linspace(0, 7, 1000)
+y0 = np.array([])
+y1 = np.array([])
+for v in xvalue:
+    y0 = np.append(y0,prob0(v))
+    y1 = np.append(y1,prob1(v))
+ax2=plt.subplot(1,2,2)
+ax2.plot(xvalue,y0,label='P(C0|x)')
+ax2.plot(xvalue,y1,label='P(C1|x)')
+ax2.legend(loc='best')
+ax2.set_title('posterior probability distribution')
+plt.show()                     
 #expected loss
 #because generally, assuming a number begins wit 1, if we say '1' is '0', we will lose the value on digit level.
 L00=0
