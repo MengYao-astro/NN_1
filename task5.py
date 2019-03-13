@@ -26,10 +26,8 @@ def grdmse(xor_in, xor_out, xor_weight, ep):
     temp = np.copy(xor_weight)
     for i in range(len(grad)):
         temp[i] += ep
-        # print( temp[i] , mse(xor_in, xor_out, temp), mse(xor_in, xor_out, temp) - mse(xor_in, xor_out, xor_weight))
         grad[i] = ( mse(xor_in, xor_out, temp) - mse(xor_in, xor_out, xor_weight) ) / ep
         temp[i] -= ep
-        # print( temp[i] , mse(xor_in, xor_out, temp), mse(xor_in, xor_out, temp) - mse(xor_in, xor_out, xor_weight))
     return grad
 
 # Function to find digit from activation function
